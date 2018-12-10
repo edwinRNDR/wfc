@@ -1,0 +1,8 @@
+*.exe
+ffmpegOutput.txt
+*.mp4
+*.iml
+.gradle/
+.idea/
+out/
+target/

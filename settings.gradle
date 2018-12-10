@@ -1,0 +1,3 @@
+rootProject.name = 'wfc'
+
+include 'wfc-core', 'wfc-openrndr', 'wfc-demo-openrndr'
