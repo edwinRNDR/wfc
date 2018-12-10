@@ -3,8 +3,6 @@ package org.openrndr.wfc
 class OverlappingDecoder(private val model: Model,
                          private val colors: List<Color>,
                          private val patterns: Array<IntArray>) {
-
-
     fun decode(state: State, x:Int, y:Int) : Color {
         return if (state.observable) {
             decodeObservation(state, x, y)
@@ -29,7 +27,6 @@ class OverlappingDecoder(private val model: Model,
     }
 
     fun decodeSuperposition(state: State, x:Int, y:Int): Color {
-
         var r = 0
         var g = 0
         var b = 0
@@ -56,48 +53,9 @@ class OverlappingDecoder(private val model: Model,
                     }
                 }
             }
-
         }
         return Color((r/contributors).toInt(), (g/contributors).toInt(), (b/contributors).toInt())
     }
-
-    /**
-     *             for (i in 0 until wave.size) {
-    var contributors = 0
-    var r = 0
-    var g = 0
-    var b = 0
-    val x = i % FMX
-    val y = i / FMX
-
-    for (dy in 0 until N){
-    for (dx in 0 until N) {
-    var sx = x - dx
-    if (sx < 0) sx += FMX
-
-    var sy = y - dy
-    if (sy < 0) sy += FMY
-
-    val s = sx + sy * FMX
-    if (onBoundary(sx, sy)){
-    continue
-    }
-
-    for (t in 0 until tCounter) {
-    if (wave[s]?.get(t) == true) {
-    contributors++
-    val color = colors!![patterns?.get(t)!![dx + dy * N].toInt()]
-    r += (color.red )
-    g += color.green
-    b += (color.blue)
-    }
-    }
-    }
-
-     */
-
-
-
 }
 
 class OverlappingModel(val state: State, val decoder: OverlappingDecoder)
@@ -110,11 +68,8 @@ fun overlappingModel(
     modelHeight: Int,
     periodicInput: Boolean,
     periodicOutput: Boolean,
-    symmetry: Int
-
-): OverlappingModel {
+    symmetry: Int): OverlappingModel {
     val sample = Array(bitmapHeight) { IntArray(bitmapWidth) }
-
     val colorMap = mutableMapOf<Color, Int>()
     val colors = mutableListOf<Color>()
 
@@ -129,10 +84,7 @@ fun overlappingModel(
         }
     }
     val C = colorMap.size
-
-    println("$C entries in colorMap")
-
-    val w = Math.pow(C * 1.0, N * N * 1.0).toDouble()
+    val w = Math.pow(C * 1.0, N * N * 1.0)
 
     fun pattern(f: (Int, Int) -> Int): IntArray {
         val result = IntArray(N * N)
@@ -170,7 +122,6 @@ fun overlappingModel(
             power *= C
         }
         return result
-
     }
 
     fun patternFromIndex(ind: Long): IntArray {
@@ -188,7 +139,6 @@ fun overlappingModel(
             }
             result[i] = count
         }
-
         return result
     }
 
@@ -221,9 +171,8 @@ fun overlappingModel(
             }
         }
     }
+
     val T = weights.size
-    println("number of weights: $T")
-    //val ground = (ground + T) % T
     val baseWeights = DoubleArray(T)
 
     for (i in 0 until baseWeights.size) {
@@ -231,7 +180,6 @@ fun overlappingModel(
         val w = weights[o] ?: 0
         baseWeights[i] = w.toDouble()
     }
-    baseWeights
 
     val patterns = Array(T) { it -> patternFromIndex(ordering[it]) }
 
