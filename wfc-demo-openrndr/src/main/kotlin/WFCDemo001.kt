@@ -25,7 +25,7 @@ fun main(args: Array<String>) = application {
 
         val image = loadImage("data/overlap/RNDR-3.png")
         val size = 200
-        val model = overlappingModel(2, image, size, size, false, false, symmetry = 1)
+        val model = overlappingModel((Math.random()*100000).toInt(),2, image, size, size, false, false, symmetry = 1)
         val output = colorBuffer(size, size)
 
         model.state.clear()
@@ -42,7 +42,7 @@ fun main(args: Array<String>) = application {
                 }
                 model.state.propagate()
             }
-            model.decoder.decode(model.state, output)
+            model.decode(model.state, output)
             output.filter(MinifyingFilter.NEAREST, MagnifyingFilter.NEAREST)
             drawer.image(output, output.bounds, Rectangle(0.0, 0.0, size*4.0, size*4.0))
         }

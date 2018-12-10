@@ -1,74 +1,79 @@
 package org.openrndr.wfc
 
-class OverlappingDecoder(private val model: Model,
-                         private val colors: List<Color>,
-                         private val patterns: Array<IntArray>) {
-    fun decode(state: State, x:Int, y:Int) : Color {
+class OverlappingModel(
+    val patternWidth: Int,
+    val periodicInput: Boolean,
+    val periodicOutput: Boolean,
+    val patterns: Array<IntArray>,
+    val colors: List<Color>,
+    val state: State) {
+
+    fun decode(x: Int, y: Int): Color {
         return if (state.observable) {
-            decodeObservation(state, x, y)
+            decodeObservation(x, y)
         } else {
-            decodeSuperposition(state, x, y)
+            decodeSuperposition(x, y)
         }
     }
 
-    fun decodeObservation(state: State, x: Int, y: Int): Color {
-        val dy = if (y < model.height - model.N + 1) {
+    fun decodeObservation(x: Int, y: Int): Color {
+        val dy = if (y < state.height - patternWidth + 1) {
             0
         } else {
-            model.N - 1
+            patternWidth - 1
         }
-        val dx = if (x < model.width - model.N + 1) {
+        val dx = if (x < state.width - patternWidth + 1) {
             0
         } else {
-            model.N - 1
+            patternWidth - 1
         }
-        val c = colors[patterns[state.observed[x - dx + (y - dy) * model.width]][dx + dy * model.N]]
+        val c = colors[patterns[state.observed[x - dx + (y - dy) * state.width]][dx + dy * patternWidth]]
         return c
     }
 
-    fun decodeSuperposition(state: State, x:Int, y:Int): Color {
+    fun decodeSuperposition(x: Int, y: Int): Color {
         var r = 0
         var g = 0
         var b = 0
         var contributors = 0.0
-        for (dy in 0 until model.N) {
-            for (dx in 0 until model.N) {
+        for (dy in 0 until patternWidth) {
+            for (dx in 0 until patternWidth) {
                 var sx = x - dx
-                if (sx < 0) sx += model.width
+                if (sx < 0) sx += state.width
 
                 var sy = y - dy
-                if (sy < 0) sy += model.height
+                if (sy < 0) sy += state.height
 
-                val s = sx + sy * model.width
-                if (state.onBoundary(sx, sy)){
+                val cellIndex = sx + sy * state.width
+                if (state.onBoundary(sx, sy)) {
                     continue
                 }
-                for (t in 0 until state.T) {
-                    if (state.wave[s][t]) {
-                        contributors+= 1.0
-                        val color = colors[patterns[t][dx + dy * model.N]]
-                        r += (color.red )
+                for (waveIndex in 0 until state.waveCount) {
+                    if (state.wave[cellIndex][waveIndex]) {
+                        contributors += 1.0
+                        val color = colors[patterns[waveIndex][dx + dy * patternWidth]]
+                        r += (color.red)
                         g += color.green
                         b += (color.blue)
                     }
                 }
             }
         }
-        return Color((r/contributors).toInt(), (g/contributors).toInt(), (b/contributors).toInt())
+        return Color((r / contributors).toInt(), (g / contributors).toInt(), (b / contributors).toInt())
     }
 }
 
-class OverlappingModel(val state: State, val decoder: OverlappingDecoder)
-
 fun overlappingModel(
-    N: Int, bitmap: (Int, Int) -> Color,
+    seed: Int,
+    patternWidth: Int, bitmap: (Int, Int) -> Color,
     bitmapWidth: Int,
     bitmapHeight: Int,
     modelWidth: Int,
     modelHeight: Int,
     periodicInput: Boolean,
     periodicOutput: Boolean,
-    symmetry: Int): OverlappingModel {
+    symmetry: Int
+): OverlappingModel {
     val sample = Array(bitmapHeight) { IntArray(bitmapWidth) }
     val colorMap = mutableMapOf<Color, Int>()
     val colors = mutableListOf<Color>()
@@ -83,14 +88,14 @@ fun overlappingModel(
             sample[y][x] = index
         }
     }
-    val C = colorMap.size
-    val w = Math.pow(C * 1.0, N * N * 1.0)
+    val stateCount = colorMap.size
+    val w = Math.pow(stateCount * 1.0, patternWidth * patternWidth * 1.0)
 
     fun pattern(f: (Int, Int) -> Int): IntArray {
-        val result = IntArray(N * N)
-        for (y in 0 until N) {
-            for (x in 0 until N) {
-                result[x + y * N] = f(x, y)
+        val result = IntArray(patternWidth * patternWidth)
+        for (y in 0 until patternWidth) {
+            for (x in 0 until patternWidth) {
+                result[x + y * patternWidth] = f(x, y)
             }
         }
         return result
@@ -102,51 +107,51 @@ fun overlappingModel(
         }
     }
 
-    fun rotate(p: IntArray): IntArray {
+    fun rotate(pattern: IntArray): IntArray {
         return pattern { x, y ->
-            p[N - 1 - y + x * N]
+            pattern[patternWidth - 1 - y + x * patternWidth]
         }
     }
 
-    fun reflect(p: IntArray): IntArray {
+    fun reflect(pattern: IntArray): IntArray {
         return pattern { x, y ->
-            p[N - 1 - x + y * N]
+            pattern[patternWidth - 1 - x + y * patternWidth]
         }
     }
 
-    fun index(p: IntArray): Long {
+    fun index(pattern: IntArray): Long {
         var result = 0L
         var power = 1L
-        for (i in 0 until p.size) {
-            result += p[p.size - 1 - i] * power
-            power *= C
+        for (i in 0 until pattern.size) {
+            result += pattern[pattern.size - 1 - i] * power
+            power *= stateCount
         }
         return result
     }
 
-    fun patternFromIndex(ind: Long): IntArray {
-        var residue = ind
+    fun patternFromIndex(index: Long): IntArray {
+        var residue = index
         var power = w.toLong()
-        val result = IntArray(N * N)
+        val pattern = IntArray(patternWidth * patternWidth)
 
-        for (i in 0 until result.size) {
-            power /= C
+        for (i in 0 until pattern.size) {
+            power /= stateCount
             var count = 0
 
             while (residue >= power) {
                 residue -= power
                 count++
             }
-            result[i] = count
+            pattern[i] = count
         }
-        return result
+        return pattern
     }
 
     val weights = mutableMapOf<Long, Int>()
     val ordering = mutableListOf<Long>()
 
-    val endY = if (periodicInput) bitmapHeight else bitmapHeight - N + 1
-    val endX = if (periodicInput) bitmapWidth else bitmapWidth - N + 1
+    val endY = if (periodicInput) bitmapHeight else bitmapHeight - patternWidth + 1
+    val endX = if (periodicInput) bitmapWidth else bitmapWidth - patternWidth + 1
 
     for (y in 0 until endY) {
         for (x in 0 until endX) {
@@ -172,36 +177,36 @@ fun overlappingModel(
         }
     }
 
-    val T = weights.size
-    val baseWeights = DoubleArray(T)
+    val waveCount = weights.size
+    val waveWeights = DoubleArray(waveCount)
 
-    for (i in 0 until baseWeights.size) {
-        val o = ordering[i]
+    for (waveIndex in 0 until waveWeights.size) {
+        val o = ordering[waveIndex]
         val w = weights[o] ?: 0
-        baseWeights[i] = w.toDouble()
+        waveWeights[waveIndex] = w.toDouble()
     }
 
-    val patterns = Array(T) { it -> patternFromIndex(ordering[it]) }
+    val patterns = Array(waveCount) { it -> patternFromIndex(ordering[it]) }
 
     fun agrees(p1: IntArray, p2: IntArray, dx: Int, dy: Int): Boolean {
         val xmin = if (dx < 0) 0 else dx
-        val xmax = if (dx < 0) dx + N else N
+        val xmax = if (dx < 0) dx + patternWidth else patternWidth
         val ymin = if (dy < 0) 0 else dy
-        val ymax = if (dy < 0) dy + N else N
+        val ymax = if (dy < 0) dy + patternWidth else patternWidth
         for (y in ymin until ymax) {
             for (x in xmin until xmax) {
-                if (p1[x + N * y] != p2[x - dx + N * (y - dy)])
+                if (p1[x + patternWidth * y] != p2[x - dx + patternWidth * (y - dy)])
                     return false
             }
         }
         return true
     }
 
-    val propagator = Array(4) { d ->
-        Array(T) { t ->
+    val propagator = Array(4) { neighbour ->
+        Array(waveCount) { waveIndex ->
             val list = mutableListOf<Int>()
-            for (t2 in 0 until T) {
-                if (agrees(patterns[t], patterns[t2], DX[d], DY[d])) {
+            for (t2 in 0 until waveCount) {
+                if (agrees(patterns[waveIndex], patterns[t2], DX[neighbour], DY[neighbour])) {
                     list.add(t2)
                 }
             }
@@ -210,10 +215,8 @@ fun overlappingModel(
     }
 
     fun onBoundary(x: Int, y: Int): Boolean =
-        !periodicOutput && (x + N > modelWidth || y + N > modelHeight || x < 0 || y < 0)
+        !periodicOutput && (x + patternWidth > modelWidth || y + patternWidth > modelHeight || x < 0 || y < 0)
 
-    val model = Model(N, modelWidth, modelHeight, periodicInput, periodicOutput)
-    val state = State(model, baseWeights, propagator, ::onBoundary, T)
-    val decoder = OverlappingDecoder(model, colors, patterns)
-    return OverlappingModel(state, decoder)
+    val state = State(seed, modelWidth, modelHeight, waveWeights, propagator, ::onBoundary)
+    return OverlappingModel(patternWidth, periodicInput, periodicOutput, patterns, colors, state)
 }
