@@ -15,8 +15,6 @@ fun DoubleArray.random(r: Double): Int {
         sum = this.sum()
     }
 
-
-
     for (j in 0 until this.size) this[j] /= sum
 
     var i = 0
@@ -90,9 +88,6 @@ class State(
         this.sumOfWeights = sumOfWeights
         this.sumOfWeightLogWeights = sumOfWeightLogWeights
         startingEntropy = Math.log(sumOfWeights) - sumOfWeightLogWeights / sumOfWeights
-        println("sum of weights: $sumOfWeights")
-        println("sum of weight log weights: $sumOfWeightLogWeights")
-        println("starting entropy: $startingEntropy")
     }
 
     fun observe(): ObservationResult {
@@ -105,7 +100,6 @@ class State(
 
             val amount = sumsOfOnes[cellIndex]
             if (amount == 0) {
-                println("conflict at $cellIndex")
                 return ObservationResult.CONFLICT
             }
 
@@ -187,11 +181,6 @@ class State(
                             return ObservationResult.CONFLICT
                         }
                     }
-//                    if (comp[neighbour] < 0) {
-//                        println("mega broken")
-//                        stack.clear()
-//                        return
-//                    }
                 }
             }
         }

@@ -23,9 +23,10 @@ fun main(args: Array<String>) = application {
 //            maximumDuration = 30.0
 //        }
 
-        val image = loadImage("data/overlap/m-007.png")
+        val image = loadImage("data/overlap/RNDR-3.png")
         val size = 200
-        val model = overlappingModel((Math.random()*100000).toInt(),3, image, size, size, false, false, symmetry = 8)
+        val model = overlappingModel((Math.random()*100000).toInt(),2, image, size, size,
+            false, false, 1, true)
         val output = colorBuffer(size, size)
 
         model.state.clear()

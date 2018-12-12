@@ -13,12 +13,12 @@ fun overlappingModel(
     modelHeight: Int,
     periodicInput: Boolean,
     periodicOutput: Boolean,
-    symmetry: Int
+    symmetry: Int, ignoreFrequencies: Boolean
 ): OverlappingModel {
     input.shadow.download()
     return overlappingModel(
         seed, N, input.shadow, modelWidth, modelHeight,
-        periodicInput, periodicOutput, symmetry
+        periodicInput, periodicOutput, symmetry, ignoreFrequencies
     )
 }
 
@@ -30,7 +30,7 @@ fun overlappingModel(
     modelHeight: Int,
     periodicInput: Boolean,
     periodicOutput: Boolean,
-    symmetry: Int
+    symmetry: Int, ignoreFrequencies: Boolean
 ): OverlappingModel {
 
     fun bitmap(x: Int, y: Int): Color {
@@ -40,7 +40,7 @@ fun overlappingModel(
 
     return overlappingModel(
         seed, N, ::bitmap, shadow.colorBuffer.width, shadow.colorBuffer.height, modelWidth, modelHeight,
-        periodicInput, periodicOutput, symmetry
+        periodicInput, periodicOutput, symmetry, ignoreFrequencies
     )
 }
 

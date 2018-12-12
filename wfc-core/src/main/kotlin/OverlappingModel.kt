@@ -72,7 +72,7 @@ fun overlappingModel(
     modelHeight: Int,
     periodicInput: Boolean,
     periodicOutput: Boolean,
-    symmetry: Int
+    symmetry: Int, ignoreFrequencies: Boolean
 ): OverlappingModel {
     val sample = Array(bitmapHeight) { IntArray(bitmapWidth) }
     val colorMap = mutableMapOf<Color, Int>()
@@ -186,10 +186,10 @@ fun overlappingModel(
     val sum = waveWeights.sum()
     waveWeights.forEachIndexed { index, d -> waveWeights[index] /= sum }
 
-    waveWeights.forEach {
-        print("$it, ")
+
+    if (ignoreFrequencies) {
+        waveWeights.forEachIndexed { index, d -> waveWeights[index] = 1.0 }
     }
-    println()
 
     val patterns = Array(waveCount) { it -> patternFromHash(hashedPatterns[it]) }
 

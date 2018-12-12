@@ -24,17 +24,12 @@ fun main(args: Array<String>) = application {
             maximumDuration = 30.0
         }
 
-        val image = loadImage("data/overlap/RNDR.png")
+        val image = loadImage("data/overlap/m-007.png")
         val size = 200
-        val model = overlappingModel((Math.random()*100000).toInt(),4, image, size, size, true, false, symmetry = 8)
+        val model = overlappingModel((Math.random()*100000).toInt(),3, image, size, size,
+            true, false, 8, false)
         val output = colorBuffer(size, size)
-
-
-
         val copy = model.state.copy()
-
-        println(copy)
-        println(model.state)
 
         model.state.clear()
         model.state.copyInto(copy)
@@ -68,7 +63,6 @@ fun main(args: Array<String>) = application {
                 if (conflicts == 10) {
                     res = ObservationResult.FINISHED
                 }
-
             }
             index++
             model.decode(model.state, output)
