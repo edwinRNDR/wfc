@@ -6,7 +6,7 @@ repositories {
 dependencies {
     compile "org.openrndr:openrndr-core:$openrndr_version"
     runtime "org.openrndr:openrndr-gl3:$openrndr_version"
-    runtime "org.openrndr:openrndr-gl3-natives-windows:$openrndr_version"
+    runtime "org.openrndr:openrndr-gl3-natives-linux-x64:$openrndr_version"
     compile "org.openrndr:openrndr-ffmpeg:$openrndr_version"
     compile project(":wfc-core")
     compile project(":wfc-openrndr")

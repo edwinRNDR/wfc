@@ -119,7 +119,7 @@ fun overlappingModel(
         }
     }
 
-    fun index(pattern: IntArray): Long {
+    fun hashFromPattern(pattern: IntArray): Long {
         var result = 0L
         var power = 1L
         for (i in 0 until pattern.size) {
@@ -129,7 +129,7 @@ fun overlappingModel(
         return result
     }
 
-    fun patternFromIndex(index: Long): IntArray {
+    fun patternFromHash(index: Long): IntArray {
         var residue = index
         var power = w.toLong()
         val pattern = IntArray(patternWidth * patternWidth)
@@ -147,8 +147,8 @@ fun overlappingModel(
         return pattern
     }
 
-    val weights = mutableMapOf<Long, Int>()
-    val ordering = mutableListOf<Long>()
+    val patternOccurrences = mutableMapOf<Long, Int>()
+    val hashedPatterns = mutableListOf<Long>()
 
     val endY = if (periodicInput) bitmapHeight else bitmapHeight - patternWidth + 1
     val endX = if (periodicInput) bitmapWidth else bitmapWidth - patternWidth + 1
@@ -166,27 +166,32 @@ fun overlappingModel(
 
             val ps = arrayOf(ps0, ps1, ps2, ps3, ps4, ps5, ps6, ps7)
             for (k in 0 until symmetry) {
-                val ind = index(ps[k])
-                if (weights.containsKey(ind)) {
-                    weights[ind] = weights[ind] ?: 0 + 1
+                val hash = hashFromPattern(ps[k])
+                if (patternOccurrences.containsKey(hash)) {
+                    patternOccurrences[hash] = (patternOccurrences[hash]!! + 1)
                 } else {
-                    weights[ind] = 1
-                    ordering.add(ind)
+                    patternOccurrences[hash] = 1
+                    hashedPatterns.add(hash)
                 }
             }
         }
     }
 
-    val waveCount = weights.size
-    val waveWeights = DoubleArray(waveCount)
-
-    for (waveIndex in 0 until waveWeights.size) {
-        val o = ordering[waveIndex]
-        val w = weights[o] ?: 0
-        waveWeights[waveIndex] = w.toDouble()
+    val waveCount = patternOccurrences.size
+    val waveWeights = DoubleArray(waveCount) { waveIndex ->
+        val o = hashedPatterns[waveIndex]
+        (patternOccurrences[o]!!).toDouble()
     }
 
-    val patterns = Array(waveCount) { it -> patternFromIndex(ordering[it]) }
+    val sum = waveWeights.sum()
+    waveWeights.forEachIndexed { index, d -> waveWeights[index] /= sum }
+
+    waveWeights.forEach {
+        print("$it, ")
+    }
+    println()
+
+    val patterns = Array(waveCount) { it -> patternFromHash(hashedPatterns[it]) }
 
     fun agrees(p1: IntArray, p2: IntArray, dx: Int, dy: Int): Boolean {
         val xmin = if (dx < 0) 0 else dx
