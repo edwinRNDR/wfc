@@ -6,7 +6,8 @@ class OverlappingModel(
     val periodicOutput: Boolean,
     val patterns: Array<IntArray>,
     val colors: List<Color>,
-    val state: State) {
+    val state: State
+) {
 
     fun decode(x: Int, y: Int): Color {
         return if (state.observable) {
@@ -63,6 +64,8 @@ class OverlappingModel(
     }
 }
 
+typealias OverlappingPriorFunction = ((List<Color>, Array<IntArray>, Int, Int, Int) -> Double)
+
 fun overlappingModel(
     seed: Int,
     patternWidth: Int, bitmap: (Int, Int) -> Color,
@@ -72,7 +75,8 @@ fun overlappingModel(
     modelHeight: Int,
     periodicInput: Boolean,
     periodicOutput: Boolean,
-    symmetry: Int, ignoreFrequencies: Boolean
+    symmetry: Int, ignoreFrequencies: Boolean,
+    prior: OverlappingPriorFunction? = null
 ): OverlappingModel {
     val sample = Array(bitmapHeight) { IntArray(bitmapWidth) }
     val colorMap = mutableMapOf<Color, Int>()
@@ -222,6 +226,13 @@ fun overlappingModel(
     fun onBoundary(x: Int, y: Int): Boolean =
         !periodicOutput && (x + patternWidth > modelWidth || y + patternWidth > modelHeight || x < 0 || y < 0)
 
-    val state = State(seed, modelWidth, modelHeight, waveWeights, propagator, ::onBoundary)
+
+    val realPrior: ((Int, Int, Int) -> Double)? = if (prior != null) {
+        { x, y, w -> prior(colors, patterns, x, y, w) }
+    } else {
+        null
+    }
+
+    val state = State(seed, modelWidth, modelHeight, waveWeights, propagator, ::onBoundary, realPrior)
     return OverlappingModel(patternWidth, periodicInput, periodicOutput, patterns, colors, state)
 }
