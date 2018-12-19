@@ -1,6 +1,6 @@
 # wfc
 
-A wave-function collapse library in Kotlin. Currently only implements the overlapping model.
+A wave-function collapse library in Kotlin.
 
 _wfc_ consists of three modules:
 
@@ -17,4 +17,3 @@ Clone project, open in IntelliJ, run `WFCDemo001` in `wfc-demo-openrndr`.
 ## Attributions
 
 This mostly follows the C# implementation in https://github.com/mxgmn/WaveFunctionCollapse.
-Some minor parts are copied from https://github.com/j-roskopf/WFC
