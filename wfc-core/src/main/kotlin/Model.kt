@@ -41,7 +41,8 @@ class State(
     val height: Int,
     private val waveWeights: DoubleArray,
     private val propagator: Array<Array<IntArray>>,
-    val onBoundary: (Int, Int) -> Boolean
+    val onBoundary: (Int, Int) -> Boolean,
+    val prior: ((Int, Int, Int) -> Double)?
 ) {
 
     val waveCount = waveWeights.size
@@ -126,9 +127,18 @@ class State(
             return ObservationResult.FINISHED
         }
 
-        val distribution = DoubleArray(waveCount) { waveIndex ->
-            if (wave[argmin][waveIndex]) waveWeights[waveIndex] else 0.0
+        val distribution = if (prior == null) {
+            DoubleArray(waveCount) { waveIndex ->
+                if (wave[argmin][waveIndex]) waveWeights[waveIndex] else 0.0
+            }
+        } else {
+            val cy = argmin / width
+            val cx = argmin % width
+            DoubleArray(waveCount) { waveIndex ->
+                if (wave[argmin][waveIndex]) waveWeights[waveIndex] * prior.invoke(cx, cy, waveIndex) else 0.0
+            }
         }
+
         val observation = distribution.random(random.nextDouble())
         for (waveIndex in 0 until waveCount) {
             if (wave[argmin][waveIndex] != (waveIndex == observation)) {
@@ -232,7 +242,7 @@ class State(
     }
 
     fun copy() : State {
-        val copy = State(seed, width, height, waveWeights, propagator, onBoundary)
+        val copy = State(seed, width, height, waveWeights, propagator, onBoundary, prior)
         copyInto(copy)
         return copy
     }
