@@ -1,6 +1,8 @@
 # wfc
 
-A wave-function collapse library in Kotlin.
+A wave-function collapse (WFC) library in Kotlin.
+
+Implements 2D and 3D overlapping and tiling WFC models.
 
 _wfc_ consists of three modules:
 

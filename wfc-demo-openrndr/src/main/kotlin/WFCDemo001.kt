@@ -17,12 +17,6 @@ fun main(args: Array<String>) = application {
     }
 
     program {
-//        extend(ScreenRecorder()) {
-//            frameRate = 60
-//            quitAfterMaximum = true
-//            maximumDuration = 30.0
-//        }
-
         val image = loadImage("data/overlap/RNDR-3.png")
         val size = 200
         val model = overlappingModel((Math.random()*100000).toInt(),2, image, size, size,

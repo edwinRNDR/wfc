@@ -1,7 +1,6 @@
 package org.openrndr.wfc.demo
 
 import org.openrndr.application
-import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.MagnifyingFilter
 import org.openrndr.draw.MinifyingFilter
 import org.openrndr.draw.colorBuffer
@@ -11,6 +10,10 @@ import org.openrndr.shape.Rectangle
 import org.openrndr.wfc.ObservationResult
 import org.openrndr.wfc.openrndr.decode
 import org.openrndr.wfc.openrndr.overlappingModel
+
+/**
+ * Simple dithering demo
+ */
 
 fun main(args: Array<String>) = application {
     configure {
@@ -32,43 +35,50 @@ fun main(args: Array<String>) = application {
         val priorImage = loadImage("data/prior/head.png")
         priorImage.shadow.download()
         val size = 200
-        val model = overlappingModel((Math.random()*100000).toInt(),patternWidth, image, size, size,
-            true, false, 8, true ) {
-            colors, patterns, x,y,w ->
-
-
+        val model = overlappingModel(
+            (Math.random() * 100000).toInt(), patternWidth, image, size, size,
+            true, false, 8, false
+        ) { colors, patterns, x, y, w ->
             var r = 0.0
             var g = 0.0
             var b = 0.0
+
+            var pr = 0.0
+            var pg = 0.0
+            var pb = 0.0
             for (dy in 0 until patternWidth) {
                 for (dx in 0 until patternWidth) {
                     val c = colors[patterns[w][dx + dy * patternWidth]]
+                    val pc = priorImage.shadow.read(
+                        (x - dx).coerceIn(0, stateWidth - 1),
+                        (y - dy).coerceIn(0, stateHeight)
+                    )
                     r += c.red
                     g += c.green
                     b += c.blue
-
+                    pr += pc.r
+                    pg += pc.g
+                    pb += pc.b
                 }
             }
-            r/=255.0
-            g/=255.0
-            b/=255.0
+            r /= 255.0
+            g /= 255.0
+            b /= 255.0
 
-            r/=patternWidth*patternWidth
-            g/=patternWidth*patternWidth
-            b/=patternWidth*patternWidth
-            val p = priorImage.shadow.read(x, y)
+            r /= patternWidth * patternWidth
+            g /= patternWidth * patternWidth
+            b /= patternWidth * patternWidth
+            pr /= patternWidth * patternWidth
+            pg /= patternWidth * patternWidth
+            pb /= patternWidth * patternWidth
 
-            val dr = r - p.r
-            val dg = g - p.g
-            val db = b - p.b
+            val dr = r - pr
+            val dg = g - pg
+            val db = b - pb
 
-            val d = Math.sqrt(dr* dr + dg*dg + db*db)
-
-            Math.exp(-d*10.0)
-
-
+            val d = Math.sqrt(dr * dr + dg * dg + db * db)
+            Math.exp(-d * 10.0)
         }
-
 
         val output = colorBuffer(size, size)
         val copy = model.state.copy()
@@ -95,7 +105,7 @@ fun main(args: Array<String>) = application {
                 if (res == ObservationResult.CONFLICT) {
                     println("trying to fix conlict")
                     copy.copyInto(model.state)
-                    conflicts ++
+                    conflicts++
                 }
 
                 if (res == ObservationResult.CONTINUE) {
@@ -109,7 +119,7 @@ fun main(args: Array<String>) = application {
             index++
             model.decode(model.state, output)
             output.filter(MinifyingFilter.NEAREST, MagnifyingFilter.NEAREST)
-            drawer.image(output, output.bounds, Rectangle(0.0, 0.0, size*4.0, size*4.0))
+            drawer.image(output, output.bounds, Rectangle(0.0, 0.0, size * 4.0, size * 4.0))
         }
     }
 }

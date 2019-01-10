@@ -1,13 +1,20 @@
 repositories {
+    mavenLocal()
     maven {
         url = "https://dl.bintray.com/openrndr/openrndr"
     }
+    maven { url 'https://jitpack.io' }
 }
 dependencies {
     compile "org.openrndr:openrndr-core:$openrndr_version"
     runtime "org.openrndr:openrndr-gl3:$openrndr_version"
+    runtime "org.openrndr:openrndr-gl3-natives-windows:$openrndr_version"
     runtime "org.openrndr:openrndr-gl3-natives-linux-x64:$openrndr_version"
     compile "org.openrndr:openrndr-ffmpeg:$openrndr_version"
+    compile "com.github.openrndr.orx:orx-mesh-generators:v0.0.17"
+    compile "com.github.openrndr.orx:orx-camera:v0.0.17"
+    compile 'com.github.edwinRNDR:openrndr-dnky:706e36f48f'
+    //compile "org.openrndr.dnky:dnky:0.0.2-SNAPSHOT"
     compile project(":wfc-core")
     compile project(":wfc-openrndr")
 }
