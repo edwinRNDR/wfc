@@ -16,6 +16,8 @@ Clone project, open in IntelliJ, run `WFCDemo001` in `wfc-demo-openrndr`.
 
 [Expected outcome of WFCDemo001](https://twitter.com/voorbeeld/status/1071892898659078146)
 
+[![AVDemo002 Demo](https://img.youtube.com/vi/g4Ih8wxBh1E/0.jpg)](https://www.youtube.com/watch?v=g4Ih8wxBh1E)
+
 ## Attributions
 
 This mostly follows the C# implementation in https://github.com/mxgmn/WaveFunctionCollapse.
