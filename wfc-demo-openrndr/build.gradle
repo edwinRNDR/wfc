@@ -5,24 +5,24 @@ repositories {
     }
     maven { url 'https://jitpack.io' }
 }
-//
-//switch (org.gradle.internal.os.OperatingSystem.current()) {
-//    case org.gradle.internal.os.OperatingSystem.WINDOWS:
-//        project.ext.openrndrOS = "windows"
-//        break
-//    case org.gradle.internal.os.OperatingSystem.LINUX:
-//        project.ext.openrndrOS = "linux-x64"
-//        break
-//    case org.gradle.internal.os.OperatingSystem.MAC_OS:
-//        project.ext.openrndrOS = "macos"
-//        break
-//}
+
+switch (org.gradle.internal.os.OperatingSystem.current()) {
+    case org.gradle.internal.os.OperatingSystem.WINDOWS:
+        project.ext.openrndrOS = "windows"
+        break
+    case org.gradle.internal.os.OperatingSystem.LINUX:
+        project.ext.openrndrOS = "linux-x64"
+        break
+    case org.gradle.internal.os.OperatingSystem.MAC_OS:
+        project.ext.openrndrOS = "macos"
+        break
+}
 
 
 dependencies {
     compile "org.openrndr:openrndr-core:$openrndr_version"
     runtime "org.openrndr:openrndr-gl3:$openrndr_version"
-    runtime "org.openrndr:openrndr-gl3-natives-windows:$openrndr_version"
+    runtime "org.openrndr:openrndr-gl3-natives-$openrndrOS:$openrndr_version"
         compile "org.openrndr:openrndr-ffmpeg:$openrndr_version"
     compile "com.github.openrndr.orx:orx-mesh-generators:v0.0.18"
 //    compile "org.openrndr.extra:orx-mesh-generators:0.0.18"
