@@ -6,6 +6,12 @@ import org.openrndr.extras.meshgenerators.boxMesh
 import org.openrndr.math.Vector3
 import org.openrndr.wfc.vox.Voxel
 
+/*
+A super-naive voxel renderer. Renders every voxel as an instanced cube.
+Because voxels are rendered as a cube you will run into problems with interior faces when using
+shadow mapping.
+ */
+
 class VoxelRenderer {
     val cube = boxMesh()
     val offsets = vertexBuffer(vertexFormat { attribute("offset", VertexElementType.VECTOR3_FLOAT32)
