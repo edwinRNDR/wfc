@@ -11,12 +11,9 @@ import org.openrndr.wfc.ObservationResult3D
 import org.openrndr.wfc.atlasVoxelModel
 import org.openrndr.wfc.demo.voxelrenderer.VoxelRenderer
 
-import org.openrndr.draw.BufferMultisample
 import org.openrndr.draw.DrawPrimitive
 import org.openrndr.extras.meshgenerators.boxMesh
 import org.openrndr.extras.meshgenerators.groundPlaneMesh
-import org.openrndr.ffmpeg.ScreenRecorder
-import org.openrndr.math.transforms.rotate
 import org.openrndr.math.transforms.transform
 
 import java.io.File
@@ -58,22 +55,22 @@ fun main(args: Array<String>) = application {
         val s = scene {
             node {
                 transform = transform {
-                    translate(0.0, 40.0, 0.0)
+                    translate(0.0, 80.0, 0.0)
                     rotate(Vector3.UNIT_X, 90.0)
                 }
                 spotLight {
                     color = ColorRGBa.WHITE.shade(1.0)
-                    shadows = true
-                    innerAngle = 0.0
+                    shadows = Shadows.VSM(512)
+                    innerAngle = 30.0
                     outerAngle = 45.0
-                    linearAttenuation = 0.05
+                    linearAttenuation = 0.0
                 }
             }
 
             node {
                 hemisphereLight {
-                    upColor = ColorRGBa.WHITE.shade(0.05)
-                    downColor = ColorRGBa(0.05, 0.1, 0.05).shade(0.05)
+                    upColor = ColorRGBa.WHITE.shade(0.25)
+                    downColor = ColorRGBa(0.05, 0.1, 0.05).shade(0.0)
                 }
             }
 
@@ -88,9 +85,9 @@ fun main(args: Array<String>) = application {
                 mesh {
                     geometry = geometry(groundPlaneMesh(500.0,500.0))
                     basicMaterial {
-                        color = ColorRGBa.WHITE
+                        color = ColorRGBa.GRAY
                         roughness = 1.0
-                        metalness = 1.0
+                        metalness = 0.0
                     }
                 }
             }
@@ -116,22 +113,22 @@ fun main(args: Array<String>) = application {
                             x_position += i_offset;
                             """
                         color = ColorRGBa.WHITE
-                        metalness = 1.0
-                        roughness = 1.0
+                        metalness = 0.0
+                        roughness = 0.5
+
+//                        texture {
+//                            source = TextureFromCode("texture.rgb = vec3(cos(v_worldPosition.y*1.0)*0.5+0.5);")
+//                            target = TextureTarget.ROUGNESS
+//                        }
+
+
+//                        texture {
+//                            source = TextureFromCode("texture.rgb = vec3(cos(v_worldPosition.y*0.5)*0.5+0.5);")
+//                            target = TextureTarget.METALNESS
+//                        }
 
                         texture {
-                            source = TextureFromCode("texture.rgb = vec3(cos(v_worldPosition.y*1.0)*0.5+0.5);")
-                            target = TextureTarget.ROUGNESS
-                        }
-
-
-                        texture {
-                            source = TextureFromCode("texture.rgb = vec3(cos(v_worldPosition.y*0.5)*0.5+0.5);")
-                            target = TextureTarget.METALNESS
-                        }
-
-                        texture {
-                            source = TextureFromCode("texture.rgb = pow(vi_color.rgb, vec3(2.2));")
+                            source = TextureFromCode("texOut.rgb = pow(vi_color.rgb, vec3(1.0/2.2));")
                             target = TextureTarget.COLOR
                         }
 
@@ -140,9 +137,19 @@ fun main(args: Array<String>) = application {
                                 float tx = smoothstep(0.0, 0.1/1.0, mod(0.6+v_worldPosition.x/1.0,1.0) ) * smoothstep(0.2/1.0, 0.1/1.0, mod(0.6+v_worldPosition.x/1.0,1.0) );
                                 float tz = smoothstep(0.0, 0.1/1.0, mod(0.6+v_worldPosition.z/1.0,1.0) ) * smoothstep(0.2/1.0, 0.1/1.0, mod(0.6+v_worldPosition.z/1.0,1.0) );
                                 float ty = smoothstep(0.0, 0.1/1.0, mod(0.6+v_worldPosition.y/1.0,1.0) ) * smoothstep(0.2/1.0, 0.1/1.0, mod(0.6+v_worldPosition.y/1.0,1.0) );
-                                texture.rgb =  vec3(1.0 - 0.1*(ty+tz+tx)); //vec3(1.0 - 0.2*(max(0.0,max(tx,tz))));
+                                texOut.rgb =  vec3(1.0 - 0.1*(ty+tz+tx)); //vec3(1.0 - 0.2*(max(0.0,max(tx,tz))));
                                 """)
                             target = TextureTarget.COLOR
+                        }
+
+                        texture {
+                            source = TextureFromCode("""
+                                float tx = smoothstep(0.0, 0.1/1.0, mod(0.6+v_worldPosition.x/1.0,1.0) ) * smoothstep(0.2/1.0, 0.1/1.0, mod(0.6+v_worldPosition.x/1.0,1.0) );
+                                float tz = smoothstep(0.0, 0.1/1.0, mod(0.6+v_worldPosition.z/1.0,1.0) ) * smoothstep(0.2/1.0, 0.1/1.0, mod(0.6+v_worldPosition.z/1.0,1.0) );
+                                float ty = smoothstep(0.0, 0.1/1.0, mod(0.6+v_worldPosition.y/1.0,1.0) ) * smoothstep(0.2/1.0, 0.1/1.0, mod(0.6+v_worldPosition.y/1.0,1.0) );
+                                texOut.rgb =  vec3(1.0 - 0.1*(ty+tz+tx)); //vec3(1.0 - 0.2*(max(0.0,max(tx,tz))));
+                                """)
+                            target = TextureTarget.AMBIENT_OCCLUSION
                         }
 
                     }
@@ -154,7 +161,7 @@ fun main(args: Array<String>) = application {
                     basicMaterial {
                         metalness = 0.0
                         roughness = 1.0
-                        color = ColorRGBa.BLACK
+                        color = ColorRGBa.PINK.toLinear()
                     }
                 }
             }
@@ -195,7 +202,7 @@ fun main(args: Array<String>) = application {
 
         extend {
             pr.fogColor = ColorRGBa.PINK.toLinear()
-            pr.fogDensity = 0.0001
+            pr.fogDensity = 0.0005
             pr.focalPlane = 4.0
             pr.aperture = 2.0
             pr.exposure = 1.0

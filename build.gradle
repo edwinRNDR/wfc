@@ -3,7 +3,7 @@ plugins {
 }
 
 ext {
-    openrndr_version = "0.3.32-rc1"
+    openrndr_version = "0.3.35"
 }
 
 allprojects {

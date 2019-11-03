@@ -280,7 +280,7 @@ private val defaultPalette = arrayOf(
 fun readVox(stream: FileInputStream): VoxFile {
     val voxels: MutableList<Array<Voxel>> = mutableListOf()
 
-    val bytes = stream.readAllBytes()
+    val bytes = stream.readBytes()
 
     val bb = ByteBuffer.wrap(bytes)
     bb.rewind()
