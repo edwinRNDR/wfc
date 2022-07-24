@@ -22,11 +22,11 @@ fun main(args: Array<String>) = application {
     }
 
     program {
-        extend(ScreenRecorder()) {
-            frameRate = 60
-            quitAfterMaximum = true
-            maximumDuration = 30.0
-        }
+//        extend(ScreenRecorder()) {
+//            frameRate = 60
+//            quitAfterMaximum = true
+//            maximumDuration = 30.0
+//        }
 
         val stateHeight = 200
         val stateWidth = 200
